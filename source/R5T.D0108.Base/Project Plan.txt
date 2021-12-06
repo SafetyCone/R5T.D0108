@@ -1,0 +1,3 @@
+R5T.D0108.Base - Service definitions for IExtensionMethodBaseRepository service.
+
+GOALS:
