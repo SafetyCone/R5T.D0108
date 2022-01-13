@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using R5T.Magyar;
+
 using R5T.D0108;
 using R5T.T0100;
 
@@ -11,6 +13,18 @@ namespace System
 {
     public static class IExtensionMethodBaseRepositoryExtensions
     {
+        public static async Task AddDuplicateExtensionMethodBaseNameSelection(this IExtensionMethodBaseRepository extensionMethodBaseRepository,
+            ExtensionMethodBaseNameSelection duplicateExtensionMethodBaseNameSelection)
+        {
+            await extensionMethodBaseRepository.AddDuplicateExtensionMethodBaseNameSelections(EnumerableHelper.From(duplicateExtensionMethodBaseNameSelection));
+        }
+
+        public static async Task AddIgnoredExtensionMethodBaseNamespacedTypeName(this IExtensionMethodBaseRepository extensionMethodBaseRepository,
+            string extensionMethodBaseNamespacedTypeName)
+        {
+            await extensionMethodBaseRepository.AddIgnoredExtensionMethodBaseNamespacedTypeNames(EnumerableHelper.From(extensionMethodBaseNamespacedTypeName));
+        }
+
         public static async Task<ExtensionMethodBase[]> GetExpectedUniqueExtensionMethodBases(this IExtensionMethodBaseRepository extensionMethodBaseRepository)
         {
             var extensionMethodBases = await extensionMethodBaseRepository.GetAllExtensionMethodBases();

@@ -7,6 +7,7 @@ using R5T.Magyar;
 
 using R5T.T0064;
 using R5T.T0100;
+using R5T.T0100.X002;
 
 
 namespace R5T.D0108.I001
@@ -244,7 +245,7 @@ namespace R5T.D0108.I001
             var nameSelectionsTextFilePath = await this.ExtensionMethodBaseRepositoryFilePathsProvider.GetExtensionMethodBaseNameSelectionsTextFilePath();
 
             var nameSelectionValues = Instances.FileSystemOperator.FileExists(nameSelectionsTextFilePath)
-                ? Instances.DuplicateValuesOperator.LoadDuplicateValueSelections(nameSelectionsTextFilePath)
+                ? await Instances.DuplicateValuesOperator.LoadDuplicateValueSelections(nameSelectionsTextFilePath)
                 : new Dictionary<string, string>()
                 ;
 
@@ -272,7 +273,7 @@ namespace R5T.D0108.I001
                     xExtensionMethodBaseNameSelection => xExtensionMethodBaseNameSelection.ExtensionMethodBaseNamespacedTypeName,
                     xExtensionMethodBaseNameSelection => Instances.GuidOperator.ToStringStandard(xExtensionMethodBaseNameSelection.ExtensionMethodBaseIdentity));
 
-            Instances.DuplicateValuesOperator.SaveDuplicateValueSelections(
+            await Instances.DuplicateValuesOperator.SaveDuplicateValueSelections(
                 nameSelectionsTextFilePath,
                 nameSelectionValues);
         }
@@ -282,7 +283,7 @@ namespace R5T.D0108.I001
             var ignoredNamesTextFilepath = await this.ExtensionMethodBaseRepositoryFilePathsProvider.GetIgnoredExtensionMethodBaseNamesTextFilePath();
 
             var ignoredNamespacedTypeNames = Instances.FileSystemOperator.FileExists(ignoredNamesTextFilepath)
-                ? Instances.IgnoredValuesOperator.LoadIgnoredValues(ignoredNamesTextFilepath)
+                ? await Instances.IgnoredValuesOperator.LoadIgnoredValues(ignoredNamesTextFilepath)
                 : new HashSet<string>()
                 ;
 
@@ -294,7 +295,7 @@ namespace R5T.D0108.I001
         {
             var ignoredNamesTextFilepath = await this.ExtensionMethodBaseRepositoryFilePathsProvider.GetIgnoredExtensionMethodBaseNamesTextFilePath();
 
-            Instances.IgnoredValuesOperator.SaveIgnoredValues(
+            await Instances.IgnoredValuesOperator.SaveIgnoredValues(
                 ignoredNamesTextFilepath,
                 ignoredExtensionMethodBaseNamespacedTypeNames
                     .OrderAlphabetically());
@@ -305,21 +306,7 @@ namespace R5T.D0108.I001
             // Duplicate extension method base name selections.
             var duplicateNameSelectionsTextFilePath = await this.ExtensionMethodBaseRepositoryFilePathsProvider.GetDuplicateExtensionMethodBaseNamesTextFilePath();
 
-            var duplicateNameSelectionValues = Instances.FileSystemOperator.FileExists(duplicateNameSelectionsTextFilePath)
-                ? Instances.DuplicateValuesOperator.LoadDuplicateValueSelections(duplicateNameSelectionsTextFilePath)
-                : new Dictionary<string, string>()
-                ;
-
-            // File is formatted as {extension method base namespaced type name}| {identity}, which sure, is inconvenient for human analysis, but is required since code file path is not unique. (TODO: provide some other file export of this data.)
-            var duplicateNameSelections = duplicateNameSelectionValues
-                .Select(xPair => new ExtensionMethodBaseNameSelection
-                {
-                    ExtensionMethodBaseIdentity = Instances.GuidOperator.FromStringStandard(xPair.Value),
-                    ExtensionMethodBaseNamespacedTypeName = xPair.Key
-                })
-                .ToArray()
-                ;
-
+            var duplicateNameSelections = await Instances.Operation.LoadDuplicateExtensionMethodBaseNameSelections(duplicateNameSelectionsTextFilePath);
             return duplicateNameSelections;
         }
 
@@ -327,16 +314,9 @@ namespace R5T.D0108.I001
         {
             var duplicateNameSelectionsTextFilePath = await this.ExtensionMethodBaseRepositoryFilePathsProvider.GetDuplicateExtensionMethodBaseNamesTextFilePath();
 
-            // File is formatted as {extension method base namespaced type name}| {identity}, which sure, is inconvenient for human analysis, but is required since code file path is not unique. (TODO: provide some other file export of this data.)
-            var duplicateNameSelectionValues = duplicateExtensionMethodBaseNameSelections
-                .OrderAlphabetically(xExtensionMethodBaseNameSelection => xExtensionMethodBaseNameSelection.ExtensionMethodBaseNamespacedTypeName)
-                .ToDictionary(
-                    xExtensionMethodBaseNameSelection => xExtensionMethodBaseNameSelection.ExtensionMethodBaseNamespacedTypeName,
-                    xExtensionMethodBaseNameSelection => Instances.GuidOperator.ToStringStandard(xExtensionMethodBaseNameSelection.ExtensionMethodBaseIdentity));
-
-            Instances.DuplicateValuesOperator.SaveDuplicateValueSelections(
+            await Instances.Operation.SaveExtensionMethodBaseNameSelections(
                 duplicateNameSelectionsTextFilePath,
-                duplicateNameSelectionValues);
+                duplicateExtensionMethodBaseNameSelections);
         }
 
         private async Task<ExtensionMethodBaseToProjectMapping[]> LoadToProjectMappings()
@@ -363,19 +343,25 @@ namespace R5T.D0108.I001
 
         #endregion
 
-        public async Task AddDuplicateExtensionMethodBaseNameSelection(ExtensionMethodBaseNameSelection duplicateExtensionMethodBaseNameSelection)
+        public async Task AddDuplicateExtensionMethodBaseNameSelections(IEnumerable<ExtensionMethodBaseNameSelection> newDuplicateExtensionMethodBaseNameSelections)
         {
             var duplicateExtensionMethodBaseNameSelections = await this.LoadDuplicateExtensionMethodBaseNameSelections();
 
-            var hasDuplicateNameSelection = await this.HasDuplicateExtensionMethodBaseNameSelection(duplicateExtensionMethodBaseNameSelection);
-            if (hasDuplicateNameSelection)
+            foreach (var duplicateExtensionMethodBaseNameSelection in duplicateExtensionMethodBaseNameSelections)
             {
-                throw new Exception("Duplicate extension method base already exists.");
+                var hasDuplicateNameSelection = FileBasedExtensionMethodBaseRepository.HasExtensionMethodBaseNameSelection(
+                    duplicateExtensionMethodBaseNameSelections,
+                    duplicateExtensionMethodBaseNameSelection);
+
+                if (hasDuplicateNameSelection)
+                {
+                    throw new Exception("Duplicate extension method base already exists.");
+                }
             }
 
             // Else, modify and save.
             var modifiedDuplicateExtensionMethodBaseNameSelections = duplicateExtensionMethodBaseNameSelections
-                .Append(duplicateExtensionMethodBaseNameSelection)
+                .AppendRange(newDuplicateExtensionMethodBaseNameSelections)
                 ;
 
             await this.SaveDuplicateExtensionMethodBaseNameSelections(modifiedDuplicateExtensionMethodBaseNameSelections);
@@ -466,21 +452,25 @@ namespace R5T.D0108.I001
             await this.SaveExtensionMethodBaseNameSelections(modifiedExtensionMethodBaseNameSelections);
         }
 
-        public async Task AddIgnoredExtensionMethodBaseNamespacedTypeName(string extensionMethodBaseNamespacedTypeName)
+        public async Task AddIgnoredExtensionMethodBaseNamespacedTypeNames(IEnumerable<string> extensionMethodBaseNamespacedTypeNames)
         {
-            var ignoredNamespacedTypeName = await this.LoadIgnoredExtensionMethodBaseNamespacedTypeNames();
+            var ignoredNamespacedTypeNames = await this.LoadIgnoredExtensionMethodBaseNamespacedTypeNames();
 
-            var hasIgnoredNamespacedTypeName = FileBasedExtensionMethodBaseRepository.HasIgnoredExtensionMethodBaseNamespacedTypeName(
-                ignoredNamespacedTypeName,
-                extensionMethodBaseNamespacedTypeName);
-            if (hasIgnoredNamespacedTypeName)
+            foreach (var extensionMethodBaseNamespacedTypeName in extensionMethodBaseNamespacedTypeNames)
             {
-                throw new Exception("Ignored namespaced type name already exists.");
+                var hasIgnoredNamespacedTypeName = FileBasedExtensionMethodBaseRepository.HasIgnoredExtensionMethodBaseNamespacedTypeName(
+                    ignoredNamespacedTypeNames,
+                    extensionMethodBaseNamespacedTypeName);
+
+                if (hasIgnoredNamespacedTypeName)
+                {
+                    throw new Exception("Ignored namespaced type name already exists.");
+                }
             }
 
             // Else, modify and save.
-            var modifiedIgnoredNamespacedTypeName = ignoredNamespacedTypeName
-                .Append(extensionMethodBaseNamespacedTypeName)
+            var modifiedIgnoredNamespacedTypeName = ignoredNamespacedTypeNames
+                .AppendRange(extensionMethodBaseNamespacedTypeNames)
                 ;
 
             await this.SaveIgnoredExtensionMethodBaseNamespacedTypeNames(modifiedIgnoredNamespacedTypeName);

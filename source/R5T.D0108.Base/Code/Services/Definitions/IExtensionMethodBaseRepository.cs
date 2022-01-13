@@ -95,7 +95,7 @@ namespace R5T.D0108
 
         #region Ignored Extension Method Base Namespaced Type Names
 
-        Task AddIgnoredExtensionMethodBaseNamespacedTypeName(string extensionMethodBaseNamespacedTypeName);
+        Task AddIgnoredExtensionMethodBaseNamespacedTypeNames(IEnumerable<string> extensionMethodBaseNamespacedTypeName);
 
         Task<WasFound<string>> HasIgnoredExtensionMethodBaseNamespacedTypeName(string extensionMethodBaseNamespacedTypeName);
 
@@ -111,7 +111,7 @@ namespace R5T.D0108
 
         #region Duplicate Extension Method Base Name Selections
 
-        Task AddDuplicateExtensionMethodBaseNameSelection(ExtensionMethodBaseNameSelection extensionMethodBaseNameSelection);
+        Task AddDuplicateExtensionMethodBaseNameSelections(IEnumerable<ExtensionMethodBaseNameSelection> extensionMethodBaseNameSelections);
 
         Task<WasFound<ExtensionMethodBaseNameSelection>> HasDuplicateExtensionMethodBaseNameSelection(ExtensionMethodBaseNameSelection extensionMethodBaseNameSelection);
 
