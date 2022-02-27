@@ -17,6 +17,11 @@ namespace System
             string jsonFilePath)
         {
             var output = JsonFileHelper.LoadFromFile<ExtensionMethodBase[]>(jsonFilePath);
+            if(output is null)
+            {
+                output = Array.Empty<ExtensionMethodBase>();
+            }
+
             return output;
         }
 
@@ -32,6 +37,11 @@ namespace System
             string jsonFilePath)
         {
             var output = JsonFileHelper.LoadFromFile<ExtensionMethodBaseToProjectMapping[]>(jsonFilePath);
+            if(output is null)
+            {
+                output = Array.Empty<ExtensionMethodBaseToProjectMapping>();
+            }
+
             return output;
         }
 
