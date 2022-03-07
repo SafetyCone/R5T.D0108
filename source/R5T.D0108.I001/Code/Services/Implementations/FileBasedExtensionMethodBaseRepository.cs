@@ -751,6 +751,14 @@ namespace R5T.D0108.I001
             return output;
         }
 
+        public async Task<Dictionary<Guid, WasFound<ExtensionMethodBase>>> HasExtensionMethodBases(IEnumerable<Guid> identities)
+        {
+            var extensionMethodBases = await this.LoadExtensionMethodBases();
+
+            var output = extensionMethodBases.FindDictionaryByIdentity(identities);
+            return output;
+        }
+
         public async Task<WasFound<ExtensionMethodBase>> HasExtensionMethodBase(string namespacedTypeName, string codeFilePath)
         {
             var extensionMethodBases = await this.LoadExtensionMethodBases();

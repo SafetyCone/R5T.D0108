@@ -33,6 +33,9 @@ namespace R5T.D0108
         /// </summary>
         Task<WasFound<ExtensionMethodBase>> HasExtensionMethodBase(Guid identity);
 
+        Task<Dictionary<Guid, WasFound<ExtensionMethodBase>>> HasExtensionMethodBases(
+            IEnumerable<Guid> identities);
+
         /// <summary>
         /// Namespaced type name is not unique. (There might be multiple projects with the same namespaced type name, unfortunately.)
         /// </summary>
