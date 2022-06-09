@@ -9,7 +9,7 @@ namespace R5T.D0108.I001
     public static class IServiceActionExtensions
     {
         /// <summary>
-        /// Adds the <see cref="FileBasedExtensionMethodBaseRepository"/> implementation of <see cref="IFileBasedExtensionMethodBaseRepository"/> as a <see cref="ServiceLifetime.Singleton"/>.
+        /// Adds the <see cref="FileBasedExtensionMethodBaseRepository"/> implementation of <see cref="IFileBasedExtensionMethodBaseRepository"/> as a <see cref="Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton"/>.
         /// </summary>
         public static IServiceAction<IFileBasedExtensionMethodBaseRepository> AddFileBasedExtensionMethodBaseRepositoryAction(this IServiceAction _,
             IServiceAction<IExtensionMethodBaseRepositoryFilePathsProvider> extensionMethodBaseRepositoryFilePathsProviderAction)
@@ -21,7 +21,7 @@ namespace R5T.D0108.I001
         }
 
         /// <summary>
-        /// Forwards the <see cref="IFileBasedExtensionMethodBaseRepository"/> service to <see cref="IExtensionMethodBaseRepository"/> as a <see cref="ServiceLifetime.Singleton"/>.
+        /// Forwards the <see cref="IFileBasedExtensionMethodBaseRepository"/> service to <see cref="IExtensionMethodBaseRepository"/> as a <see cref="Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton"/>.
         /// </summary>
         public static IServiceAction<IExtensionMethodBaseRepository> ForwardToIExtensionMethodBaseRepositoryAction(this IServiceAction _,
             IServiceAction<IFileBasedExtensionMethodBaseRepository> IFileBasedExtensionMethodBaseRepositoryAction)
